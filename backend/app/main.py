@@ -4,7 +4,11 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 
 from app.database import engine, Base, get_db
+# Import models to ensure they are registered with Base.metadata before create_all
+from app.models.user import User
+from app.models.club import Club
 from app.routes.auth import router as auth_router
+from app.routes.clubs import router as clubs_router
 
 
 @asynccontextmanager
@@ -22,12 +26,13 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="ClubLink API",
     description="Backend API for College Club Management System",
-    version="0.2.0",
+    version="0.3.0",
     lifespan=lifespan
 )
 
-# Include Auth router
+# Include Routers
 app.include_router(auth_router)
+app.include_router(clubs_router)
 
 
 @app.get("/api/health", status_code=status.HTTP_200_OK)
