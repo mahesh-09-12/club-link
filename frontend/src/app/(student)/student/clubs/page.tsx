@@ -1,74 +1,75 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import { Compass, Search, Users } from "lucide-react";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { useEffect, useState, useMemo, useCallback } from "react";
+import { Compass, Search, Loader2, AlertCircle, RefreshCw } from "lucide-react";
+import { ClubCard } from "@/components/common/ClubCard";
+import { clubService } from "@/services/clubService";
+import { Club } from "@/types";
+import { Button } from "@/components/ui/button";
 
 export default function StudentClubsPage() {
-  const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("All");
+  const [clubs, setClubs] = useState<Club[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState<string>("");
+  const [category, setCategory] = useState<string>("All");
 
-  const clubs = [
-    {
-      id: "acm",
-      name: "ACM Student Chapter",
-      category: "Technical",
-      description: "Advancing computing as a science & profession. Join for hackathons, workshops, and coding sessions.",
-      membersCount: 142,
-      joined: true,
-    },
-    {
-      id: "robotics",
-      name: "Robotics & Automation Club",
-      category: "Engineering",
-      description: "Build bots, learn microcontrollers, and compete in national robotics competitions.",
-      membersCount: 89,
-      joined: true,
-    },
-    {
-      id: "literary",
-      name: "Creative Writing Society",
-      category: "Arts",
-      description: "A community for poets, novelists, and storytellers to share feedback and express creativity.",
-      membersCount: 56,
-      joined: false,
-    },
-    {
-      id: "chess",
-      name: "Chess Club",
-      category: "Sports & Gaming",
-      description: "Play, practice, compete. Open to all skill levels from absolute beginners to Grandmasters.",
-      membersCount: 75,
-      joined: true,
-    },
-    {
-      id: "fine-arts",
-      name: "Fine Arts Club",
-      category: "Arts",
-      description: "Unleash your creativity with painting, sketching, and sculpture workshops.",
-      membersCount: 43,
-      joined: false,
-    },
-    {
-      id: "gdg",
-      name: "Google Developer Group on Campus",
-      category: "Technical",
-      description: "Learn Google Technologies, Cloud Computing, Android, and Flutter with developers.",
-      membersCount: 110,
-      joined: false,
-    },
-  ];
+  const fetchClubs = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await clubService.getClubs();
+      setClubs(data);
+    } catch (err) {
+      console.error("Failed to fetch clubs for student view:", err);
+      setError("Unable to load clubs right now. Please check backend connectivity.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  const categories = ["All", "Technical", "Engineering", "Arts", "Sports & Gaming"];
+  useEffect(() => {
+    let isMounted = true;
+    clubService
+      .getClubs()
+      .then((data) => {
+        if (isMounted) {
+          setClubs(data);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        if (isMounted) {
+          console.error("Failed to fetch clubs for student view:", err);
+          setError("Unable to load clubs right now. Please check backend connectivity.");
+          setLoading(false);
+        }
+      });
 
-  const filteredClubs = clubs.filter((club) => {
-    const matchesSearch = club.name.toLowerCase().includes(search.toLowerCase()) || 
-                          club.description.toLowerCase().includes(search.toLowerCase());
-    const matchesCategory = category === "All" || club.category === category;
-    return matchesSearch && matchesCategory;
-  });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const categories = useMemo(() => {
+    const set = new Set<string>();
+    clubs.forEach((c) => {
+      if (c.category) set.add(c.category);
+    });
+    return ["All", ...Array.from(set)];
+  }, [clubs]);
+
+  const filteredClubs = useMemo(() => {
+    return clubs.filter((club) => {
+      const matchesSearch =
+        club.name.toLowerCase().includes(search.toLowerCase()) ||
+        club.description.toLowerCase().includes(search.toLowerCase());
+      const matchesCategory =
+        category === "All" ||
+        club.category.toLowerCase() === category.toLowerCase();
+      return matchesSearch && matchesCategory;
+    });
+  }, [clubs, search, category]);
 
   return (
     <div className="space-y-8 font-sans">
@@ -96,7 +97,7 @@ export default function StudentClubsPage() {
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className="px-3 py-2 border border-border bg-card rounded-md text-sm outline-none focus:border-primary transition-colors"
+            className="px-3 py-2 border border-border bg-card rounded-md text-sm outline-none focus:border-primary transition-colors cursor-pointer"
           >
             {categories.map((cat) => (
               <option key={cat} value={cat}>
@@ -107,47 +108,50 @@ export default function StudentClubsPage() {
         </div>
       </div>
 
+      {/* Loading State */}
+      {loading && (
+        <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+          <Loader2 className="size-8 animate-spin mb-3 text-primary" />
+          <p className="text-sm">Fetching clubs from server...</p>
+        </div>
+      )}
+
+      {/* Error State */}
+      {!loading && error && (
+        <div className="flex flex-col items-center justify-center py-16 px-4 border border-destructive/20 bg-destructive/5 rounded-lg text-center">
+          <AlertCircle className="size-10 text-destructive mb-3" />
+          <h3 className="text-lg font-semibold text-foreground">Error loading clubs</h3>
+          <p className="text-sm text-muted-foreground mt-1 max-w-md">{error}</p>
+          <Button onClick={fetchClubs} variant="outline" className="mt-4 gap-2">
+            <RefreshCw className="size-4" /> Try Again
+          </Button>
+        </div>
+      )}
+
       {/* Clubs Grid */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredClubs.map((club) => (
-          <div
-            key={club.id}
-            className="border border-border bg-card hover:bg-muted/10 transition-colors p-6 rounded-lg shadow-xs flex flex-col justify-between"
-          >
-            <div>
-              <div className="flex justify-between items-start gap-2">
-                <span className="inline-flex items-center rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary ring-1 ring-inset ring-primary/20">
-                  {club.category}
-                </span>
-                <span className="text-xs text-muted-foreground flex items-center gap-1">
-                  <Users className="size-3.5" /> {club.membersCount}
-                </span>
-              </div>
-              <h3 className="text-lg font-semibold mt-4 text-foreground">{club.name}</h3>
-              <p className="text-sm text-muted-foreground mt-2 line-clamp-3">
-                {club.description}
-              </p>
-            </div>
-            <div className="mt-6 pt-4 border-t border-border flex justify-between items-center">
-              <Link href={`/student/clubs?id=${club.id}`} className={cn(buttonVariants({ variant: "link", size: "sm" }), "p-0 h-auto font-medium text-xs")}>
-                View Details
-              </Link>
-              {club.joined ? (
-                <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded">Joined</span>
-              ) : (
-                <Button size="sm" className="font-medium text-xs">
-                  Request to Join
-                </Button>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
-      
-      {filteredClubs.length === 0 && (
-        <div className="text-center py-12 border border-dashed border-border rounded-lg bg-card">
-          <Compass className="size-8 text-muted-foreground mx-auto mb-2" />
-          <p className="text-sm text-muted-foreground">No clubs found matching your search criteria.</p>
+      {!loading && !error && filteredClubs.length > 0 && (
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredClubs.map((club) => (
+            <ClubCard
+              key={club.id}
+              club={club}
+              detailsHref={`/clubs/${club.id}`}
+              showJoinButton={true}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Empty State */}
+      {!loading && !error && filteredClubs.length === 0 && (
+        <div className="text-center py-16 border border-dashed border-border rounded-lg bg-card">
+          <Compass className="size-10 text-muted-foreground mx-auto mb-3" />
+          <h3 className="text-lg font-semibold text-foreground">No clubs available</h3>
+          <p className="text-sm text-muted-foreground mt-1">
+            {clubs.length === 0
+              ? "There are currently no active clubs registered on the platform."
+              : "No clubs match your current search and category filters."}
+          </p>
         </div>
       )}
     </div>
