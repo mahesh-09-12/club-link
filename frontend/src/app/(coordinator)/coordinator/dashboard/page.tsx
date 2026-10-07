@@ -52,7 +52,7 @@ export default function CoordinatorDashboard() {
         <div className="border border-border bg-card rounded-lg p-6 shadow-xs">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-bold tracking-tight">Pending Membership Requests</h2>
-            <Link href="/coordinator/members" className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "text-xs text-primary font-medium")}>
+            <Link href="/coordinator/join-requests" className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "text-xs text-primary font-medium")}>
               View all
             </Link>
           </div>

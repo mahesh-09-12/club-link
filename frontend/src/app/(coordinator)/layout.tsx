@@ -8,6 +8,7 @@ import {
   Users, 
   Calendar, 
   Megaphone,
+  UserPlus,
   LogOut, 
   Menu, 
   X
@@ -27,6 +28,7 @@ export default function CoordinatorLayout({
   const navItems = [
     { name: "Dashboard", href: "/coordinator/dashboard", icon: LayoutDashboard },
     { name: "Manage Club", href: "/coordinator/manage-club", icon: Settings },
+    { name: "Join Requests", href: "/coordinator/join-requests", icon: UserPlus },
     { name: "Club Members", href: "/coordinator/members", icon: Users },
     { name: "Club Events", href: "/coordinator/events", icon: Calendar },
     { name: "Announcements", href: "/coordinator/announcements", icon: Megaphone },

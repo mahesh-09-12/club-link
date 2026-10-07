@@ -1,5 +1,5 @@
 import { apiClient } from '@/lib/api';
-import { JoinRequest } from '@/types';
+import { JoinRequest, JoinRequestStatus } from '@/types';
 
 export const joinRequestService = {
   /**
@@ -17,6 +17,27 @@ export const joinRequestService = {
    */
   getMyJoinRequests: async (): Promise<JoinRequest[]> => {
     const response = await apiClient.get<JoinRequest[]>('/api/join-requests/my');
+    return response.data;
+  },
+
+  /**
+   * Retrieve all join requests for a specific club (Coordinator / Faculty).
+   */
+  getClubJoinRequests: async (clubId: number): Promise<JoinRequest[]> => {
+    const response = await apiClient.get<JoinRequest[]>(`/api/clubs/${clubId}/join-requests`);
+    return response.data;
+  },
+
+  /**
+   * Update the status of a join request (approve or reject).
+   */
+  updateJoinRequestStatus: async (
+    requestId: number,
+    status: JoinRequestStatus
+  ): Promise<JoinRequest> => {
+    const response = await apiClient.put<JoinRequest>(`/api/join-requests/${requestId}`, {
+      status,
+    });
     return response.data;
   },
 };

@@ -47,9 +47,9 @@ export default function FacultyDashboard() {
         <div className="border border-border bg-card rounded-lg p-6 shadow-xs">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-bold tracking-tight flex items-center gap-1.5">
-              <AlertCircle className="size-4.5 text-primary" /> Pending Club Approvals
+              <AlertCircle className="size-4.5 text-primary" /> Pending Join Request Approvals
             </h2>
-            <Link href="/faculty/clubs" className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "text-xs text-primary font-medium")}>
+            <Link href="/faculty/join-requests" className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "text-xs text-primary font-medium")}>
               View all
             </Link>
           </div>

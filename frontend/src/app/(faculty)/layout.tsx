@@ -5,7 +5,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { 
   LayoutDashboard, 
   Compass, 
-  UserCheck, 
+  UserCheck,
+  UserPlus,
   BarChart3, 
   LogOut, 
   Menu, 
@@ -25,6 +26,7 @@ export default function FacultyLayout({
 
   const navItems = [
     { name: "Dashboard", href: "/faculty/dashboard", icon: LayoutDashboard },
+    { name: "Join Requests", href: "/faculty/join-requests", icon: UserPlus },
     { name: "All Campus Clubs", href: "/faculty/clubs", icon: Compass },
     { name: "Coordinators", href: "/faculty/coordinators", icon: UserCheck },
     { name: "Analytics & Reports", href: "/faculty/reports", icon: BarChart3 },
