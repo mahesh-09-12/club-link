@@ -16,15 +16,18 @@ backend/
 │   ├── models/
 │   │   ├── __init__.py
 │   │   ├── user.py       # SQLAlchemy User model (student, club_coordinator, faculty_coordinator)
-│   │   └── club.py       # SQLAlchemy Club model & ClubStatus enum
+│   │   ├── club.py       # SQLAlchemy Club model & ClubStatus enum
+│   │   └── join_request.py # SQLAlchemy JoinRequest model & JoinRequestStatus enum
 │   ├── routes/
 │   │   ├── __init__.py
 │   │   ├── auth.py       # Auth endpoints (/register, /login, /me)
-│   │   └── clubs.py      # Club management endpoints (CRUD operations)
+│   │   ├── clubs.py      # Club management endpoints (CRUD operations)
+│   │   └── join_requests.py # Join request endpoints (create, view, approve/reject)
 │   └── schemas/
 │       ├── __init__.py
 │       ├── auth.py       # Auth request/response schemas
-│       └── club.py       # Club request/response schemas
+│       ├── club.py       # Club request/response schemas
+│       └── join_request.py # Join request request/response schemas
 ├── .env.example          # Environment variables template
 ├── requirements.txt      # Python dependencies
 └── README.md
@@ -264,5 +267,102 @@ The API server will run at `http://127.0.0.1:8000`.
 ```json
 {
   "message": "Club deleted successfully"
+}
+```
+
+---
+
+## Join Request Endpoints
+
+### 1. Submit Join Request (Protected — Students Only)
+`POST /api/join-requests`
+
+**Header Required:** `Authorization: Bearer <access_token>` (Must have `student` role)
+
+**Request Body:**
+```json
+{
+  "club_id": 1
+}
+```
+
+**Response (`201 Created`):**
+```json
+{
+  "id": 1,
+  "student_id": 10,
+  "club_id": 1,
+  "status": "pending",
+  "created_at": "2026-10-07T08:30:00Z",
+  "updated_at": "2026-10-07T08:30:00Z"
+}
+```
+
+---
+
+### 2. View My Join Requests (Protected — Students Only)
+`GET /api/join-requests/my`
+
+**Header Required:** `Authorization: Bearer <access_token>` (Must have `student` role)
+
+**Response (`200 OK`):**
+```json
+[
+  {
+    "id": 1,
+    "student_id": 10,
+    "club_id": 1,
+    "status": "pending",
+    "created_at": "2026-10-07T08:30:00Z",
+    "updated_at": "2026-10-07T08:30:00Z"
+  }
+]
+```
+
+---
+
+### 3. View Club Join Requests (Protected — Assigned Coordinators Only)
+`GET /api/clubs/{club_id}/join-requests`
+
+**Header Required:** `Authorization: Bearer <access_token>` (Must be assigned faculty coordinator or club coordinator for the club)
+
+**Response (`200 OK`):**
+```json
+[
+  {
+    "id": 1,
+    "student_id": 10,
+    "club_id": 1,
+    "status": "pending",
+    "created_at": "2026-10-07T08:30:00Z",
+    "updated_at": "2026-10-07T08:30:00Z"
+  }
+]
+```
+
+---
+
+### 4. Update Join Request Status (Protected — Assigned Coordinators Only)
+`PUT /api/join-requests/{request_id}`
+
+**Header Required:** `Authorization: Bearer <access_token>` (Must be assigned faculty coordinator or club coordinator for the club)
+
+**Request Body:**
+```json
+{
+  "status": "approved"
+}
+```
+*Allowed status transitions:* `approved` or `rejected`.
+
+**Response (`200 OK`):**
+```json
+{
+  "id": 1,
+  "student_id": 10,
+  "club_id": 1,
+  "status": "approved",
+  "created_at": "2026-10-07T08:30:00Z",
+  "updated_at": "2026-10-07T08:32:00Z"
 }
 ```

@@ -10,6 +10,11 @@ from app.schemas.club import (
     ClubUpdate,
     ClubResponse,
 )
+from app.schemas.join_request import (
+    JoinRequestCreate,
+    JoinRequestUpdate,
+    JoinRequestResponse,
+)
 
 __all__ = [
     "RegisterRequest",
@@ -20,4 +25,7 @@ __all__ = [
     "ClubCreate",
     "ClubUpdate",
     "ClubResponse",
+    "JoinRequestCreate",
+    "JoinRequestUpdate",
+    "JoinRequestResponse",
 ]

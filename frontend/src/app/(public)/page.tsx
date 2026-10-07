@@ -61,7 +61,7 @@ export default function LandingPage() {
       <section className="relative overflow-hidden py-24 md:py-32 bg-linear-to-b from-background to-muted/20 dark:bg-zinc-900">
         <div className="container mx-auto px-4 md:px-6 flex flex-col items-center text-center">
           <div className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/60 px-3 py-1 text-xs font-medium text-muted-foreground mb-6">
-            <Zap className="size-3.5 text-primary fill-primary/10" />
+            <Users className="size-3.5 text-primary fill-primary/10" />
             <span>Welcome to ClubLink</span>
           </div>
           <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl max-w-200 leading-tight">

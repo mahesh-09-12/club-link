@@ -7,8 +7,10 @@ from app.database import engine, Base, get_db
 # Import models to ensure they are registered with Base.metadata before create_all
 from app.models.user import User
 from app.models.club import Club
+from app.models.join_request import JoinRequest
 from app.routes.auth import router as auth_router
 from app.routes.clubs import router as clubs_router
+from app.routes.join_requests import router as join_requests_router
 
 
 @asynccontextmanager
@@ -26,13 +28,14 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="ClubLink API",
     description="Backend API for College Club Management System",
-    version="0.3.0",
+    version="0.3.1",
     lifespan=lifespan
 )
 
 # Include Routers
 app.include_router(auth_router)
 app.include_router(clubs_router)
+app.include_router(join_requests_router)
 
 
 @app.get("/api/health", status_code=status.HTTP_200_OK)
