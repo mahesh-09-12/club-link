@@ -1,11 +1,24 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Calendar, CheckCircle, Clock, Shield, Loader2, AlertCircle } from "lucide-react";
+import {
+  ArrowLeft,
+  Calendar,
+  CheckCircle,
+  Clock,
+  Shield,
+  Loader2,
+  AlertCircle,
+  UserPlus,
+  XCircle,
+  LogIn,
+} from "lucide-react";
 import { clubService } from "@/services/clubService";
-import { Club } from "@/types";
+import { joinRequestService } from "@/services/joinRequestService";
+import { getAuthToken } from "@/lib/api";
+import { Club, JoinRequest } from "@/types";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -19,36 +32,96 @@ export default function ClubDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [notFound, setNotFound] = useState<boolean>(false);
 
-  useEffect(() => {
+  // Join Request state
+  const [userRequest, setUserRequest] = useState<JoinRequest | null>(null);
+  const [submitting, setSubmitting] = useState<boolean>(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [actionSuccess, setActionSuccess] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+
+  const fetchClubDetails = useCallback(async () => {
     if (!clubIdParam) return;
+    setLoading(true);
+    setError(null);
+    setNotFound(false);
 
-    const fetchClubDetails = async () => {
-      setLoading(true);
-      setError(null);
-      setNotFound(false);
+    try {
+      const data = await clubService.getClubById(clubIdParam);
+      setClub(data);
 
-      try {
-        const data = await clubService.getClubById(clubIdParam);
-        setClub(data);
-      } catch (err: unknown) {
-        console.error("Failed to fetch club details:", err);
-        if (
-          typeof err === "object" &&
-          err !== null &&
-          "response" in err &&
-          (err as { response?: { status?: number } }).response?.status === 404
-        ) {
-          setNotFound(true);
-        } else {
-          setError("Failed to load club details. Please try again later.");
+      // Check if authenticated & fetch join requests for current student
+      const token = getAuthToken();
+      if (token) {
+        setIsAuthenticated(true);
+        try {
+          const myRequests = await joinRequestService.getMyJoinRequests();
+          const match = myRequests.find((req) => req.club_id === data.id);
+          if (match) {
+            setUserRequest(match);
+          }
+        } catch {
+          // Token might be invalid or not student role, fail silently for request status check
         }
-      } finally {
-        setLoading(false);
+      } else {
+        setIsAuthenticated(false);
       }
-    };
-
-    fetchClubDetails();
+    } catch (err: unknown) {
+      console.error("Failed to fetch club details:", err);
+      if (
+        typeof err === "object" &&
+        err !== null &&
+        "response" in err &&
+        (err as { response?: { status?: number } }).response?.status === 404
+      ) {
+        setNotFound(true);
+      } else {
+        setError("Failed to load club details. Please try again later.");
+      }
+    } finally {
+      setLoading(false);
+    }
   }, [clubIdParam]);
+
+  useEffect(() => {
+    fetchClubDetails();
+  }, [fetchClubDetails]);
+
+  const handleJoinRequest = async () => {
+    if (!club) return;
+    if (!isAuthenticated) {
+      router.push("/login");
+      return;
+    }
+
+    setSubmitting(true);
+    setActionError(null);
+    setActionSuccess(null);
+
+    try {
+      const newReq = await joinRequestService.createJoinRequest(club.id);
+      setUserRequest(newReq);
+      setActionSuccess("Join request submitted successfully!");
+    } catch (err: unknown) {
+      console.error("Error submitting join request:", err);
+      if (typeof err === "object" && err !== null && "response" in err) {
+        const res = (err as { response?: { status?: number; data?: { detail?: string } } }).response;
+        if (res?.status === 400) {
+          setActionError(res.data?.detail || "A pending join request for this club already exists.");
+        } else if (res?.status === 401) {
+          setActionError("Your session has expired. Please log in again.");
+          setIsAuthenticated(false);
+        } else if (res?.status === 403) {
+          setActionError("Only authenticated students can submit join requests.");
+        } else {
+          setActionError(res?.data?.detail || "Failed to submit request. Please try again.");
+        }
+      } else {
+        setActionError("Unable to connect to the server. Please check your connection.");
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -138,7 +211,58 @@ export default function ClubDetailPage() {
               {club.name}
             </h1>
           </div>
+
+          {/* Join Request Action Area */}
+          <div className="shrink-0">
+            {!isAuthenticated ? (
+              <Button onClick={() => router.push("/login")} className="gap-2 font-medium">
+                <LogIn className="size-4" /> Log in to Request to Join
+              </Button>
+            ) : userRequest?.status === "pending" ? (
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                <Clock className="size-4" /> Join Request Pending
+              </div>
+            ) : userRequest?.status === "approved" ? (
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                <CheckCircle className="size-4" /> Request Approved
+              </div>
+            ) : (
+              <Button
+                onClick={handleJoinRequest}
+                disabled={submitting}
+                className="gap-2 font-medium"
+              >
+                {submitting ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin" /> Submitting Request...
+                  </>
+                ) : userRequest?.status === "rejected" ? (
+                  <>
+                    <UserPlus className="size-4" /> Re-submit Join Request
+                  </>
+                ) : (
+                  <>
+                    <UserPlus className="size-4" /> Request to Join
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
         </div>
+
+        {/* Feedback Messages */}
+        {actionSuccess && (
+          <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-sm rounded-lg flex items-center gap-2">
+            <CheckCircle className="size-4 shrink-0" />
+            <span>{actionSuccess}</span>
+          </div>
+        )}
+        {actionError && (
+          <div className="p-3 bg-destructive/10 border border-destructive/20 text-destructive text-sm rounded-lg flex items-center gap-2">
+            <XCircle className="size-4 shrink-0" />
+            <span>{actionError}</span>
+          </div>
+        )}
 
         {/* Description */}
         <div>
