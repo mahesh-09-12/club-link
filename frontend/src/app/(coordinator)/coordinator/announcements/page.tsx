@@ -4,21 +4,15 @@ import { useState } from "react";
 import { Megaphone, Plus, Clock, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+interface AnnouncementItem {
+  id: string;
+  title: string;
+  content: string;
+  date: string;
+}
+
 export default function CoordinatorAnnouncementsPage() {
-  const [announcements, setAnnouncements] = useState([
-    {
-      id: "1",
-      title: "Annual Membership Fee Due",
-      content: "Please pay the annual member dues of $10 to David (Treasurer) by the end of next week.",
-      date: "1 day ago",
-    },
-    {
-      id: "2",
-      title: "Next ACM Meeting Postponed",
-      content: "Our weekly lab sync has been moved from Thursday to Friday at 4 PM in Lab 4 due to conflicting midterms.",
-      date: "3 days ago",
-    },
-  ]);
+  const [announcements, setAnnouncements] = useState<AnnouncementItem[]>([]);
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -26,7 +20,7 @@ export default function CoordinatorAnnouncementsPage() {
   const handlePost = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || !content) return;
-    const newAnn = {
+    const newAnn: AnnouncementItem = {
       id: Date.now().toString(),
       title,
       content,
@@ -42,7 +36,7 @@ export default function CoordinatorAnnouncementsPage() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 font-sans">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Announcements</h1>

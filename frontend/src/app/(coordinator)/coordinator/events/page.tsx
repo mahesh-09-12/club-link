@@ -4,25 +4,17 @@ import { useState } from "react";
 import { Calendar, Plus, Clock, MapPin, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+interface EventItem {
+  id: string;
+  title: string;
+  date: string;
+  time: string;
+  location: string;
+  RSVPCount: number;
+}
+
 export default function CoordinatorEventsPage() {
-  const [events, setEvents] = useState([
-    {
-      id: "workshop",
-      title: "Introduction to Arduino",
-      date: "Aug 18, 2026",
-      time: "2:00 PM",
-      location: "Lab 4",
-      RSVPCount: 34,
-    },
-    {
-      id: "expo",
-      title: "Robo-Expo 2026",
-      date: "Sep 05, 2026",
-      time: "10:00 AM",
-      location: "Exhibition Hall",
-      RSVPCount: 128,
-    },
-  ]);
+  const [events, setEvents] = useState<EventItem[]>([]);
 
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
@@ -32,7 +24,7 @@ export default function CoordinatorEventsPage() {
   const handleCreateEvent = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || !date) return;
-    const newEvent = {
+    const newEvent: EventItem = {
       id: Date.now().toString(),
       title,
       date,
@@ -52,13 +44,13 @@ export default function CoordinatorEventsPage() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 font-sans">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Manage Events</h1>
           <p className="text-muted-foreground mt-1">
-            Create workshops, scheduling, and view attendee registrations.
+            Create workshops, schedule activities, and view attendee registrations.
           </p>
         </div>
       </div>
@@ -67,7 +59,7 @@ export default function CoordinatorEventsPage() {
         {/* Event Form */}
         <div className="border border-border bg-card p-6 rounded-lg shadow-xs h-fit">
           <h3 className="text-lg font-bold tracking-tight mb-4 flex items-center gap-1.5">
-            <Plus className="size-4.5 text-primary" /> Create Event
+            <Plus className="size-4.5 text-primary" /> Schedule Event
           </h3>
           <form onSubmit={handleCreateEvent} className="space-y-4">
             <div>
@@ -164,7 +156,7 @@ export default function CoordinatorEventsPage() {
             {events.length === 0 && (
               <div className="text-center py-12 border border-dashed border-border rounded-lg bg-card">
                 <Calendar className="size-8 text-muted-foreground mx-auto mb-2" />
-                <p className="text-sm text-muted-foreground">No events scheduled.</p>
+                <p className="text-sm text-muted-foreground">No events scheduled yet. Create an event using the form.</p>
               </div>
             )}
           </div>

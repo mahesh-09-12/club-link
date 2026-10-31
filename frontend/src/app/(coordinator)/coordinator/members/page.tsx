@@ -1,52 +1,23 @@
-import { Users, Mail, UserMinus } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Users } from "lucide-react";
 
 export default function CoordinatorMembersPage() {
-  const members = [
-    { id: "1", name: "David Miller", email: "d.miller@university.edu", major: "Computer Science", role: "Treasurer" },
-    { id: "2", name: "John Doe", email: "johndoe@university.edu", major: "Electrical Eng", role: "Member" },
-    { id: "3", name: "Sarah Connor", email: "s.connor@university.edu", major: "Mechanical Eng", role: "Member" },
-    { id: "4", name: "Emily Watson", email: "e.watson@university.edu", major: "Physics", role: "Secretary" },
-  ];
-
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 font-sans">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Club Members</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Club Members Roster</h1>
         <p className="text-muted-foreground mt-1">
-          Manage member rosters, assign officer roles, or remove members.
+          Manage member rosters and assign officer roles.
         </p>
       </div>
 
-      {/* Member Roster List */}
-      <div className="border border-border bg-card rounded-lg shadow-xs overflow-hidden">
-        <div className="p-4 border-b border-border bg-muted/20 flex justify-between items-center">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Member List ({members.length})</span>
-        </div>
-        <div className="divide-y divide-border">
-          {members.map((member) => (
-            <div
-              key={member.id}
-              className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-muted/10 transition-colors"
-            >
-              <div>
-                <h4 className="font-semibold text-sm text-foreground">{member.name}</h4>
-                <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1.5">
-                  <Mail className="size-3" /> {member.email} • {member.major}
-                </p>
-              </div>
-              <div className="flex items-center gap-4">
-                <span className="text-xs font-semibold px-2 py-0.5 rounded border border-border bg-muted text-muted-foreground">
-                  {member.role}
-                </span>
-                <Button size="xs" variant="outline" className="text-destructive hover:bg-destructive/10 hover:text-destructive border-destructive/20 h-8 gap-1">
-                  <UserMinus className="size-3.5" /> Remove
-                </Button>
-              </div>
-            </div>
-          ))}
-        </div>
+      {/* Empty / Feature Placeholder State */}
+      <div className="text-center py-16 border border-dashed border-border rounded-lg bg-card">
+        <Users className="size-10 text-muted-foreground mx-auto mb-3" />
+        <h3 className="text-lg font-semibold text-foreground">Member Roster System</h3>
+        <p className="text-sm text-muted-foreground max-w-md mx-auto mt-1">
+          Formal member roster management will be enabled in a future release. Review student applications under Join Requests.
+        </p>
       </div>
     </div>
   );
